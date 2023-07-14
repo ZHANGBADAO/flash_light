@@ -19,106 +19,88 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   String _switchText = '打开';
   final torchController = TorchController();
 
   @override
   void initState() {
     super.initState();
-    print('==============initState');
-    print('==========ssssssssss====p==============');
-
-    _checkFlashlight();
-  }
-  @override
-  void didUpdateWidget(covariant MyHomePage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    print('==========didUpdateWidget');
-  }
-
-  @override
-  void deactivate() {
-    super.deactivate();
-    print('==========deactivate');
+    WidgetsBinding.instance.addObserver(this);
+    _switchFlashlight();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-    print('==========dispose');
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    debugPrint('=================state = $state');
   }
 
   //打开或关闭手电筒
   void _switchFlashlight() async {
     bool? active = await torchController.toggle();
 
-    if (active == true) {
-      setState(() {
-        _switchText = '关闭';
-      });
-    } else {
-      setState(() {
-        _switchText = '打开';
-      });
-    }
-  }
-
-  //查看手电筒是否打开
-  void _checkFlashlight() async {
-    print('==========ssssssssss====$_switchText==============');
-
-    bool? active = await torchController.isTorchActive;
-    if (active == true) {
-      setState(() {
-
-        _switchText = '关闭';
-      });
-    } else {
-      setState(() {
-        _switchText = '打开';
-      });
-    }
+    setState(() {
+      _switchText = active == true ? '关闭' : '打开';
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.black54,
-        appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            IconButton(
-              icon: _switchText == '打开' ? const Icon(Icons.flashlight_on) : const Icon(Icons.flashlight_off),
-              iconSize: 100,
-              color: Theme.of(context).colorScheme.inversePrimary,
-              onPressed: _switchFlashlight,
-            ),
-            Text(
-              '$_switchText手电筒',
-              style: const TextStyle(
-                color: Colors.white70,
+    return WillPopScope(
+        onWillPop: () async {
+          // 处理回退逻辑
+          // 返回false会阻止回退
+          //手电筒打开时，点击返回键，关闭手电筒
+          if (_switchText == '关闭') _switchFlashlight();
+          return true;
+        },
+        child: Scaffold(
+          backgroundColor: Colors.black54,
+          appBar: AppBar(
+            // TRY THIS: Try changing the color here to a specific color (to
+            // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+            // change color while the other colors stay the same.
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            // Here we take the value from the MyHomePage object that was created by
+            // the App.build method, and use it to set our appbar title.
+            title: Center(
+              child: Text(
+                widget.title,
               ),
             ),
-            /*Text(
+          ),
+          body: Center(
+            // Center is a layout widget. It takes a single child and positions it
+            // in the middle of the parent.
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                IconButton(
+                  icon: _switchText == '打开' ? const Icon(Icons.flashlight_on) : const Icon(Icons.flashlight_off),
+                  iconSize: 100,
+                  color: Theme.of(context).colorScheme.inversePrimary,
+                  onPressed: _switchFlashlight,
+                ),
+                Text(
+                  '$_switchText手电筒',
+                  style: const TextStyle(
+                    color: Colors.amber,
+                  ),
+                ),
+                /*Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),*/
-          ],
-        ),
-      ),
+              ],
+            ),
+          ),
+        )
     );
   }
 }
