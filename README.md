@@ -2,6 +2,9 @@
 
 A FlashLight Flutter project.
 
+## 构建
+`flutter build apk --target-platform android-arm64`
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
